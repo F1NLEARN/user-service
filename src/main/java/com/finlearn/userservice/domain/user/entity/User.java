@@ -1,8 +1,10 @@
 package com.finlearn.userservice.domain.user.entity;
 
 import com.finlearn.common.domain.BaseEntity;
+import com.finlearn.userservice.domain.user.enums.UserRole;
 import com.finlearn.userservice.domain.user.enums.UserStatus;
 import jakarta.persistence.*;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,8 +23,8 @@ import lombok.NoArgsConstructor;
 public class User extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID userId;
 
     @Column(nullable = false, length = 100)
     private String email;
@@ -37,12 +39,17 @@ public class User extends BaseEntity {
     @Column(nullable = false, length = 20)
     private UserStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private UserRole role;
+
     @Builder
-    private User(String email, String password, String nickname, UserStatus status) {
+    private User(String email, String password, String nickname, UserStatus status, UserRole role) {
         this.email = email;
         this.password = password;
         this.nickname = nickname;
         this.status = status;
+        this.role = role;
     }
 
     public static User create(String email, String password, String nickname) {
@@ -51,10 +58,12 @@ public class User extends BaseEntity {
                 .password(password)
                 .nickname(nickname)
                 .status(UserStatus.ACTIVE)
+                .role(UserRole.USER)
                 .build();
     }
 
     public void changeStatus(UserStatus status) { this.status = status; }
+    public void changeRole(UserRole role) { this.role = role; }
     public void changePassword(String password) { this.password = password; }
     public void changeNickname(String nickname) { this.nickname = nickname; }
 }
