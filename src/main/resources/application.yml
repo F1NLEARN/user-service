@@ -38,10 +38,29 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,refresh
+        include: health,info,prometheus
+
   endpoint:
     health:
       show-details: always
+
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+  tracing:
+    sampling:
+      probability: 1.0
+
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId}] %logger{36} - %msg%n"
+
 jwt:
   secret: {YOUR_JWT_SECRET_KEY}
   access-token-expiration: 360000
