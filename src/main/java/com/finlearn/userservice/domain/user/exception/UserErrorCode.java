@@ -13,7 +13,10 @@ public enum UserErrorCode {
     INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "USER_007", "이메일 또는 비밀번호가 올바르지 않습니다."),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "USER_008", "유효하지 않은 토큰입니다."),
     REFRESH_TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "USER_009", "저장된 리프레시 토큰이 없습니다."),
-    INVALID_TOKEN_TYPE(HttpStatus.UNAUTHORIZED, "USER_010", "리프레시 토큰이 아닙니다.");
+    INVALID_TOKEN_TYPE(HttpStatus.UNAUTHORIZED, "USER_010", "리프레시 토큰이 아닙니다."),
+    INVALID_AUTHORIZATION_HEADER(HttpStatus.BAD_REQUEST, "USER_011", "Authorization 헤더 형식이 올바르지 않습니다."),
+    ACCESS_TOKEN_REQUIRED(HttpStatus.UNAUTHORIZED, "USER_012", "Access Token이 필요합니다."),
+    TOKEN_ALREADY_BLACKLISTED(HttpStatus.CONFLICT, "USER_013", "이미 로그아웃 처리된 토큰입니다.");
 
     private final HttpStatus httpStatus;
     private final String code;

@@ -8,22 +8,24 @@ import com.finlearn.userservice.application.user.dto.response.LoginResponse;
 import com.finlearn.userservice.application.user.dto.response.TokenRefreshResponse;
 import com.finlearn.userservice.application.user.dto.response.UserMeResponse;
 import com.finlearn.userservice.domain.auth.entity.RefreshToken;
+import com.finlearn.userservice.domain.auth.repository.AccessTokenBlacklistRepository;
 import com.finlearn.userservice.domain.auth.repository.RefreshTokenRepository;
 import com.finlearn.userservice.domain.user.entity.User;
 import com.finlearn.userservice.domain.user.enums.UserStatus;
 import com.finlearn.userservice.domain.user.event.UserCreatedEvent;
 import com.finlearn.userservice.domain.user.exception.UserErrorCode;
+import com.finlearn.userservice.domain.user.exception.UserException;
 import com.finlearn.userservice.domain.user.repository.UserRepository;
 import com.finlearn.userservice.infrastructure.security.jwt.JwtTokenProvider;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import com.finlearn.userservice.domain.user.exception.UserException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +37,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final ApplicationEventPublisher eventPublisher;
     private final JwtTokenProvider jwtTokenProvider;
+    private final AccessTokenBlacklistRepository accessTokenBlacklistRepository;
 
     @Transactional
     public UUID signUp(SignUpRequest request) {
@@ -124,6 +127,32 @@ public class UserService {
         refreshTokenRepository.deleteByUserId(userId);
     }
 
+    @Transactional
+    public void logoutByAccessToken(String authorizationHeader) {
+        String accessToken = extractBearerToken(authorizationHeader);
+
+        if (!jwtTokenProvider.validateToken(accessToken)) {
+            throw new UserException(UserErrorCode.INVALID_TOKEN);
+        }
+
+        if (!"ACCESS".equals(jwtTokenProvider.getTokenType(accessToken))) {
+            throw new UserException(UserErrorCode.ACCESS_TOKEN_REQUIRED);
+        }
+
+        long remainingMillis = jwtTokenProvider.getRemainingExpirationMillis(accessToken);
+        if (remainingMillis <= 0) {
+            throw new UserException(UserErrorCode.INVALID_TOKEN);
+        }
+
+        boolean saved = accessTokenBlacklistRepository.addToBlacklist(
+                accessToken,
+                Duration.ofMillis(remainingMillis)
+        );
+        if (!saved) {
+            throw new UserException(UserErrorCode.TOKEN_ALREADY_BLACKLISTED);
+        }
+    }
+
     public UserMeResponse getMyInfo(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
@@ -174,5 +203,18 @@ public class UserService {
         if (user.getStatus() == UserStatus.SUSPENDED) {
             throw new UserException(UserErrorCode.SUSPENDED_USER);
         }
+    }
+
+    private String extractBearerToken(String authorizationHeader) {
+        if (authorizationHeader == null || authorizationHeader.isBlank()) {
+            throw new UserException(UserErrorCode.INVALID_AUTHORIZATION_HEADER);
+        }
+
+        String prefix = "Bearer ";
+        if (!authorizationHeader.startsWith(prefix) || authorizationHeader.length() <= prefix.length()) {
+            throw new UserException(UserErrorCode.INVALID_AUTHORIZATION_HEADER);
+        }
+
+        return authorizationHeader.substring(prefix.length());
     }
 }

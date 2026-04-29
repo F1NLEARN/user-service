@@ -82,6 +82,12 @@ public class JwtTokenProvider {
         return LocalDateTime.ofInstant(expiration.toInstant(), ZoneId.systemDefault());
     }
 
+    public long getRemainingExpirationMillis(String token) {
+        long now = System.currentTimeMillis();
+        long expirationTime = parseClaims(token).getExpiration().getTime();
+        return expirationTime - now;
+    }
+
     public long getAccessTokenExpirationSeconds() {
         return accessTokenExpiration / 1000;
     }
