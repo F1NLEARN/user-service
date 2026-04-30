@@ -12,7 +12,7 @@ public class RedisAccessTokenBlacklistRepository implements AccessTokenBlacklist
 
     private static final String BLACKLIST_PREFIX = "blacklist:";
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<Object, Object> redisTemplate;
 
     @Override
     public boolean addToBlacklist(String accessToken, Duration ttl) {
