@@ -3,13 +3,13 @@ package com.finlearn.userservice.application;
 import com.finlearn.common.exception.ConflictException;
 import com.finlearn.common.exception.NotFoundException;
 import com.finlearn.userservice.domain.Profile;
-import com.finlearn.userservice.infrastructure.kafka.UserEventProducer;
-import com.finlearn.userservice.infrastructure.kafka.event.UserProfileUpdatedEvent;
+import com.finlearn.userservice.domain.user.event.ProfileUpdatedEvent;
 import com.finlearn.userservice.infrastructure.persistence.ProfileJpaRepository;
 import com.finlearn.userservice.presentation.dto.request.UpdateProfileRequest;
 import com.finlearn.userservice.presentation.dto.response.ProfileResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
@@ -21,7 +21,7 @@ import java.util.UUID;
 public class ProfileService {
 
     private final ProfileJpaRepository profileJpaRepository;
-    private final UserEventProducer userEventProducer;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * 내 프로필 조회
@@ -73,7 +73,7 @@ public class ProfileService {
     }
 
     private void publishProfileUpdatedEvent(Profile profile) {
-        userEventProducer.publishUserProfileUpdated(new UserProfileUpdatedEvent(
+        eventPublisher.publishEvent(new ProfileUpdatedEvent(
                 profile.getUserId(),
                 profile.getNickname(),
                 profile.getProfileImage()
