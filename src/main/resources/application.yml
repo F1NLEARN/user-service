@@ -4,26 +4,17 @@ server:
 spring:
   application:
     name: user-service
+  profiles:
+    active: local
+    group:
+      docker: "kafka,topics"
   config:
     import: optional:configserver:http://localhost:8888
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:5432/${DB_NAME:userdb}
+    url: jdbc:postgresql://localhost:5432/userdb
     driver-class-name: org.postgresql.Driver
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
+    password: ${DB_PASSWORD:}
 
 eureka:
   instance:
@@ -32,36 +23,4 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://${EUREKA_URL1:localhost}:8761/eureka/
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,prometheus
-
-  endpoint:
-    health:
-      show-details: always
-
-  prometheus:
-    metrics:
-      export:
-        enabled: true
-
-  tracing:
-    sampling:
-      probability: 1.0
-
-  zipkin:
-    tracing:
-      endpoint: http://localhost:9411/api/v2/spans
-
-logging:
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId}] %logger{36} - %msg%n"
-
-jwt:
-  secret: ${JWT_SECRET:12345678901234567890123456789012}
-  access-token-expiration: 360000
-  refresh-token-expiration: 1209600000
+      defaultZone: http://localhost:8761/eureka/
