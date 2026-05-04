@@ -3,15 +3,8 @@ spring:
     import: optional:configserver:http://finlearn-config-server:8888
   datasource:
     url: jdbc:postgresql://finlearn-postgres:5432/userdb
-    driver-class-name: org.postgresql.Driver
-    username: postgres
-    password: postgres
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: false
-  kafka:
-    bootstrap-servers: finlearn-kafka:9092
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
   data:
     redis:
       host: finlearn-redis
@@ -23,33 +16,6 @@ eureka:
   client:
     service-url:
       defaultZone: http://finlearn-eureka:8761/eureka/
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,prometheus
-
-  endpoint:
-    health:
-      show-details: always
-
-  prometheus:
-    metrics:
-      export:
-        enabled: true
-
-  tracing:
-    sampling:
-      probability: 1.0
-
-  zipkin:
-    tracing:
-      endpoint: http://host.docker.internal:9411/api/v2/spans
-
-logging:
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId}] %logger{36} - %msg%n"
 
 loki:
   url: http://host.docker.internal:3100/loki/api/v1/push
