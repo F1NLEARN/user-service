@@ -60,3 +60,8 @@ management:
 logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId}] %logger{36} - %msg%n"
+
+jwt:
+  secret: ${JWT_SECRET:12345678901234567890123456789012}
+  access-token-expiration: 360000
+  refresh-token-expiration: 1209600000
