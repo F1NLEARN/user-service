@@ -5,6 +5,7 @@ import com.finlearn.userservice.infrastructure.kafka.UserEventProducer;
 import com.finlearn.userservice.infrastructure.kafka.event.UserRegisteredEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -16,6 +17,7 @@ public class UserCreatedEventListener {
 
     private final UserEventProducer userEventProducer;
 
+    @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleUserCreatedEvent(UserCreatedEvent event) {
         log.info("UserCreatedEvent 수신 - userId: {}, email: {}", event.userId(), event.email());
